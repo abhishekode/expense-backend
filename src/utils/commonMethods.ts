@@ -1,9 +1,10 @@
-import type { UserType } from 'src/users/dto/user.interface';
+
+import { UserRole } from 'src/constants/common.interface';
 import type { User } from 'src/users/users.schema';
 interface JwtTokenPayload {
 	id: string;
 	email: string;
-	role: UserType;
+	role: UserRole;
 }
 interface IResponseData {
 	status: boolean;

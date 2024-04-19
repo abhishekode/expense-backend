@@ -1,21 +1,15 @@
 import * as Joi from 'joi';
-import { Gender, UserType, UserTypeUpdate } from './user.interface';
+import { Gender } from 'src/constants/common.interface';
 
 export const registrationSchema = Joi.object({
-	firstName: Joi.string().alphanum().min(3).max(30).required(),
-	lastName: Joi.string().alphanum().min(3).max(30).required(),
+	name: Joi.string().alphanum().min(3).max(30).required(),
 	email: Joi.string().email().required(),
 	password: Joi.string().min(6).required(),
 	phone: Joi.number().min(10).required(),
-	role: Joi.string()
-		.optional()
-		.valid(...Object.values(UserType)),
 });
 
 export const updateUserAccountDetailsSchema = Joi.object({
-	firstName: Joi.string().alphanum().min(3).max(30).required(),
-	lastName: Joi.string().alphanum().min(3).max(30).required(),
-	dob: Joi.string().optional(),
+	name: Joi.string().alphanum().min(3).max(30).required(),
 	description: Joi.string().optional(),
 	gender: Joi.string()
 		.optional()
@@ -44,10 +38,4 @@ export const changeForgotPasswordSchema = Joi.object({
 export const changePasswordSchema = Joi.object({
 	newPassword: Joi.string().min(6).required(),
 	oldPassword: Joi.string().min(6).required(),
-});
-
-export const ChangeUserRoleSchema = Joi.object({
-	role: Joi.string()
-		.required()
-		.valid(...Object.values(UserTypeUpdate)),
 });

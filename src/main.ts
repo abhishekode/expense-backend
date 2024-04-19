@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './utils/http-exception.filter';
+import { HttpExceptionFilter } from './middleware/http-exception.filter';
 import { VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
@@ -12,11 +12,11 @@ async function bootstrap() {
 
 	// Set /api as prefix for all the api endpoint
 	app.setGlobalPrefix('api');
-	
+
 	// Enable API versining
 	app.enableVersioning({
 		type: VersioningType.URI,
-		defaultVersion: '1'
+		defaultVersion: '1',
 	});
 
 	const port = process.env.PORT;

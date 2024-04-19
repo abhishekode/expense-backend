@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import type {
 	ChangePasswordDto,
+	CreateUserDto,
 	LoginUserDto,
 	UpdateUserDto,
 } from './dto/create-user.dto';
@@ -23,7 +24,6 @@ import {
 	generateTokenPayload,
 	sendResponse,
 } from 'src/utils/commonMethods';
-import type { UserType } from './dto/user.interface';
 
 @Injectable()
 export class UsersService {
@@ -78,11 +78,53 @@ export class UsersService {
 		});
 	}
 
+	async createNewUser(createUser: CreateUserDto) {
+		const { email, password, phone } = createUser;
+		const userWithSameEmailCount = await this.userModel
+			.countDocuments({ email })
+			.exec();
+		if (userWithSameEmailCount)
+			throw new BadRequestException(
+				'Someone else already used your email address. Please use another email.'
+			);
+
+		// In the meantime if user verify with OTP if someone registered with same email. Just on a safer side
+		const userWithSamePhoneCount = await this.userModel
+			.countDocuments({ phone })
+			.exec();
+		if (userWithSamePhoneCount)
+			throw new BadRequestException(
+				'Someone else already used your phone number. Please use another phone number.'
+			);
+
+		// We're good now we need to register new user  in our User collection
+		const hashedPassword = await generateHashPassword(password);
+
+		const newUser = await new this.userModel({
+			...createUser,
+			password: hashedPassword,
+		}).save();
+		const newUserDoc = newUser._doc as unknown as User;
+
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { password: pass, ...rest } = newUserDoc;
+
+		const payload = generateTokenPayload(newUser);
+		const token = await this.jwtService.signAsync(payload);
+
+		const data = sendResponse({
+			status: true,
+			result: { token, ...rest },
+			message: 'user logged-in successfully',
+		});
+		return data;
+	}
+
 	async resendOtp(email: string, isResetPassword = false) {
 		const user = await this.findUserByEmail(email);
 		const { otp, otpExpireTime } = generateOtpAndExpiryTime();
 
-		user.Otp = otp;
+		user.otp = otp;
 		user.otpExpireTime = otpExpireTime;
 		if (isResetPassword) {
 			user.resetPasswordToken = await generatePasswordResetToken(
@@ -103,11 +145,11 @@ export class UsersService {
 
 	async verifyEmailOtp(email: string, otp: number) {
 		const user = await this.findUserByEmail(email);
-		if (user.Otp !== otp || user.otpExpireTime < new Date()) {
+		if (user.otp !== otp || user.otpExpireTime < new Date()) {
 			throw new BadRequestException('OTP is invalid or expired.');
 		}
 
-		user.Otp = undefined;
+		user.otp = undefined;
 		user.otpExpireTime = undefined;
 		user.isEmailVerified = true;
 		await user.save();
@@ -128,11 +170,6 @@ export class UsersService {
 		if (!isPasswordMatch) {
 			throw new BadRequestException('Password is incorrect.');
 		}
-
-		if (!user.isMobileVerified)
-			throw new BadRequestException(
-				'Your mobile number is not verified. Please verify it first'
-			);
 
 		if (user.isAccountDeactivated)
 			throw new BadRequestException(
@@ -173,6 +210,7 @@ export class UsersService {
 		user.password = newPasswordHash;
 		user.resetPasswordToken = undefined;
 		await user.save();
+
 		const data = sendResponse({
 			status: true,
 			result: { changedPassword: true },
@@ -182,12 +220,10 @@ export class UsersService {
 	}
 
 	async deactivateAccount(email: string) {
-		// const email = 'test@gmail.com'; // TODO: When we extract user data from JWT token, this line should be removed.
-		// Fetch email from the JWT token and pass it in next line as dynamic email
 		const user = await this.findUserByEmail(email);
-
 		user.isAccountDeactivated = true;
 		await user.save();
+
 		const data = sendResponse({
 			status: true,
 			message: 'Your account is successfully deactivated.',
@@ -196,43 +232,13 @@ export class UsersService {
 	}
 
 	async updateUserAccountDetails(email: string, userUpdateData: UpdateUserDto) {
-		// TODO: When we extract user data from JWT token, this line should be removed.
-		// Fetch email from the JWT token and pass it in next line as dynamic email
-		await this.findUserByEmail(email);
+		const user = await this.findUserByEmail(email);
+		Object.assign(user, userUpdateData);
+		await user.save();
 
-		await this.userModel.updateOne({ email }, userUpdateData);
 		const data = sendResponse({
 			status: true,
 			message: 'Your profile details is updated successfully',
-		});
-		return data;
-	}
-
-	async changeUserRole(email: string, role: UserType) {
-		const user = await this.findUserByEmail(email);
-
-		if (!user.isMobileVerified)
-			throw new BadRequestException(
-				'Your mobile number is not verified. Please verify it first'
-			);
-
-		if (user.isAccountDeactivated)
-			throw new BadRequestException(
-				'Your account is deactivated. Please connect support for reactivate account.'
-			);
-		user.role = role;
-		const saveUserWithRole = await user.save();
-		const newUserDoc = saveUserWithRole._doc as unknown as User;
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { password: pass, ...rest } = newUserDoc;
-
-		const payload = generateTokenPayload(user);
-		const token = await this.jwtService.signAsync(payload);
-
-		const data = sendResponse({
-			status: true,
-			result: { token, user: { ...rest } },
-			message: 'Role switched successfully',
 		});
 		return data;
 	}

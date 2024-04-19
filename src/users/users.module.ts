@@ -6,17 +6,11 @@ import { UserSchema } from './users.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/constants';
 import { ConfigModule } from '@nestjs/config';
-import { DriverDocumentsSchema } from 'src/driver-documents/driver-documents.schema';
-import { AdminSchema } from 'src/admin/admin.schema';
 
 @Module({
 	imports: [
 		ConfigModule,
-		MongooseModule.forFeature([
-			{ name: 'User', schema: UserSchema },
-			{ name: 'DriverDocuments', schema: DriverDocumentsSchema },
-			{ name: 'Admin', schema: AdminSchema },
-		]),
+		MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
 		JwtModule.register({
 			global: true,
 			secret: jwtConstants.secret,

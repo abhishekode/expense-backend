@@ -1,19 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SignupType, UserType } from './user.interface';
 import {
 	SuccessResponse,
 	SuccessResultResponse,
 } from 'src/constants/common.swagger';
+import { UserRole } from 'src/constants/common.interface';
 
 class IUserResponse extends SuccessResultResponse {
 	@ApiProperty()
-	firstName: string;
+	token: string;
 
 	@ApiProperty()
-	lastName: string;
-
-	@ApiProperty({ example: '+1' })
-	countryCode: string;
+	name: string;
 
 	@ApiProperty()
 	phone: number;
@@ -21,57 +18,41 @@ class IUserResponse extends SuccessResultResponse {
 	@ApiProperty()
 	email: string;
 
-	@ApiProperty({ example: UserType.Passenger, enum: UserType })
-	role: UserType;
-
-	@ApiProperty()
-	isMobileVerified: boolean;
+	@ApiProperty({ example: UserRole.User, enum: UserRole })
+	role: string;
 
 	@ApiProperty()
 	isEmailVerified: boolean;
 
 	@ApiProperty({ example: 'false' })
 	isAccountDeactivated: boolean;
-
-	@ApiProperty({ example: 'custom', enum: SignupType })
-	signupMethod: SignupType;
 }
 
-class UserLoginResponse {
-	@ApiProperty()
-	token: string;
-	@ApiProperty({ type: IUserResponse })
-	user: IUserResponse;
-}
-
-class OtpSendResponse {
-	@ApiProperty({ example: true })
-	otpSend: boolean;
-}
-class OtpVerifiedResponse {
-	@ApiProperty({ example: true })
-	verified: boolean;
-}
-class ChangedPasswordResponse {
-	@ApiProperty({ example: true })
-	changedPassword: boolean;
-}
 export class UserLoginSuccessResponse extends SuccessResponse {
-	@ApiProperty({ type: UserLoginResponse })
-	result?: UserLoginResponse;
+	@ApiProperty({ type: IUserResponse })
+	result?: IUserResponse;
 }
 
 export class OtpSuccessSendResponse extends SuccessResponse {
-	@ApiProperty({ type: OtpSendResponse })
-	result?: OtpSendResponse;
+	@ApiProperty({
+		type: 'object',
+		properties: { otpSend: { type: 'boolean' } },
+	})
+	result: { otpSend: boolean };
 }
 
 export class OtpSuccessVerifyResponse extends SuccessResponse {
-	@ApiProperty({ type: OtpVerifiedResponse })
-	result?: OtpVerifiedResponse;
+	@ApiProperty({
+		type: 'object',
+		properties: { verified: { type: 'boolean' } },
+	})
+	result: { verified: boolean };
 }
 
 export class ChangedPasswordApiResponse extends SuccessResponse {
-	@ApiProperty({ type: ChangedPasswordResponse })
-	result?: ChangedPasswordResponse;
+	@ApiProperty({
+		type: 'object',
+		properties: { changedPassword: { type: 'boolean' } },
+	})
+	result: { changedPassword: boolean };
 }

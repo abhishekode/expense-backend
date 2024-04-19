@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { OtpVerificationModule } from './otp-verification/otp-verification.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
 	imports: [
@@ -22,7 +21,6 @@ import { OtpVerificationModule } from './otp-verification/otp-verification.modul
 			},
 		}),
 		UsersModule,
-		OtpVerificationModule,
 	],
 	controllers: [AppController],
 	providers: [],

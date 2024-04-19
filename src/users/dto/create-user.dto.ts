@@ -1,44 +1,25 @@
-import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty } from '@nestjs/swagger';
-import type { SignupType } from './user.interface';
-import { UserType } from './user.interface';
+import { Gender } from 'src/constants/common.interface';
 
 export class CreateUserDto {
-	firstName: string;
-	lastName: string;
+	@ApiProperty({ example: 'john doe' })
+	name: string;
+	@ApiProperty({ example: '+912233445566' })
 	phone: number;
-	countryCode: string;
+	@ApiProperty({ example: 'johndoe@gmail.com' })
 	email: string;
+	@ApiProperty({ example: 'Test@12345' })
 	password: string;
-	role: UserType;
-	isMobileVerified: boolean;
-	isEmailVerified: boolean;
-	signupMethod: SignupType;
-	forgotPasswordOtp: number;
-	mobileOtp: number;
 }
 
-export class updateUserAccountDetailsDto {
-	@ApiProperty()
-	firstName: string;
-	@ApiProperty()
-	lastName: string;
-	@ApiProperty()
-	dob: number;
+export class UpdateUserDto {
+	@ApiProperty({ example: 'john doe' })
+	name: string;
 	@ApiProperty()
 	description: string;
-	@ApiProperty()
+	@ApiProperty({ example: Gender.Male, enum: Gender })
 	gender: string;
 }
-export class SwitchUserRoleDto {
-	@ApiProperty({
-		example: UserType.Passenger,
-		enum: UserType,
-	})
-	role: string;
-}
-
-export class UpdateUserDto extends PartialType(CreateUserDto) {}
 
 export class ChangePasswordDto {
 	@ApiProperty()
@@ -48,9 +29,9 @@ export class ChangePasswordDto {
 }
 
 export class LoginUserDto {
-	@ApiProperty()
+	@ApiProperty({ example: 'johndoe@gmail.com' })
 	email: string;
-	@ApiProperty()
+	@ApiProperty({ example: 'Test@12345' })
 	password: string;
 }
 
