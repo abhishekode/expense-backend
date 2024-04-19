@@ -16,15 +16,15 @@ import { ConfigService } from '@nestjs/config';
 export class AwsS3Service {
 	private readonly s3Client: S3Client;
 	private readonly AWS_S3_BUCKET: string = 'abhi-sweet';
-	private accessKeyId = this.configService.get('AWS_S3_ACCESS_KEY');
-	private secretAccessKey = this.configService.get('AWS_S3_SECRET_ACCESS_KEY');
+	private accessId = this.configService.get('AWS_S3_ACCESS_KEY');
+	private AccessKeyId = this.configService.get('AWS_S3_SECRET_ACCESS_KEY');
 
 	constructor(private readonly configService: ConfigService) {
 		this.s3Client = new S3Client({
 			region: 'ap-south-1',
 			credentials: {
-				accessKeyId: this.accessKeyId,
-				secretAccessKey: this.secretAccessKey,
+				accessKeyId: this.accessId,
+				secretAccessKey: this.AccessKeyId,
 			},
 			forcePathStyle: true,
 		});
