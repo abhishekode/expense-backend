@@ -1,11 +1,12 @@
 import * as Joi from 'joi';
 import { Gender } from 'src/constants/common.interface';
+import { phoneWithCountryCodeSchema } from 'src/constants/common.joi-validation';
 
 export const registrationSchema = Joi.object({
 	name: Joi.string().alphanum().min(3).max(30).required(),
 	email: Joi.string().email().required(),
 	password: Joi.string().min(6).required(),
-	phone: Joi.number().min(10).required(),
+	phone: phoneWithCountryCodeSchema,
 });
 
 export const updateUserAccountDetailsSchema = Joi.object({

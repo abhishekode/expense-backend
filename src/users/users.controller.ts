@@ -30,7 +30,7 @@ import {
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
 	BadRequestResponse,
 	NotFoundResponse,
@@ -106,6 +106,7 @@ export class UsersController {
 
 	@Put('change-password')
 	@ApiResponse({ status: 200, type: ChangedPasswordApiResponse })
+	@ApiBearerAuth()
 	@Roles(UserRole.Admin, UserRole.User)
 	@UseGuards(AuthGuard, RolesGuard)
 	@UsePipes(new JoiValidationPipe(changePasswordSchema))
@@ -116,6 +117,7 @@ export class UsersController {
 
 	@Put('account')
 	@ApiResponse({ status: 200, type: SuccessResponse })
+	@ApiBearerAuth()
 	@Roles(UserRole.Admin, UserRole.User)
 	@UseGuards(AuthGuard, RolesGuard)
 	@UsePipes(new JoiValidationPipe(updateUserAccountDetailsSchema))
@@ -130,6 +132,7 @@ export class UsersController {
 
 	@Post('deactivate-account')
 	@ApiResponse({ status: 200, type: SuccessResponse })
+	@ApiBearerAuth()
 	@Roles(UserRole.Admin, UserRole.User)
 	@UseGuards(AuthGuard, RolesGuard)
 	async deactivateAccount(@Request() req) {
