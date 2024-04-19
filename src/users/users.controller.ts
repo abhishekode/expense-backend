@@ -6,6 +6,7 @@ import {
 	Put,
 	UseGuards,
 	Request,
+	Get,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -41,6 +42,7 @@ import {
 	OtpSuccessSendResponse,
 	OtpSuccessVerifyResponse,
 	ChangedPasswordApiResponse,
+	IUserResponse,
 } from './dto/user.swaggerResponse';
 import { UserRole } from 'src/constants/common.interface';
 
@@ -138,5 +140,15 @@ export class UsersController {
 	async deactivateAccount(@Request() req) {
 		const email = req.user.email;
 		return this.usersService.deactivateAccount(email);
+	}
+
+	@Get('profile')
+	@ApiBearerAuth()
+	@ApiResponse({ status: 200, type: IUserResponse })
+	@Roles(UserRole.Admin, UserRole.User)
+	@UseGuards(AuthGuard, RolesGuard)
+	async getUserProfile(@Request() req) {
+		const email = req.user.email;
+		return this.usersService.getUserProfile(email);
 	}
 }

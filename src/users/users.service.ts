@@ -242,4 +242,24 @@ export class UsersService {
 		});
 		return data;
 	}
+
+	async getUserProfile(email: string): Promise<User> {
+		const user = await this.findUserByEmail(email);
+
+		if (!user.isEmailVerified)
+			throw new BadRequestException(
+				'Your email is not verified. Please verify it first'
+			);
+
+		const newUserDoc = user._doc as unknown as User;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { password: pass, ...rest } = newUserDoc;
+
+		const data = sendResponse({
+			status: true,
+			result: { ...rest },
+			message: 'user logged-in successfully',
+		});
+		return data;
+	}
 }

@@ -5,7 +5,7 @@ import {
 } from 'src/constants/common.swagger';
 import { UserRole } from 'src/constants/common.interface';
 
-class IUserResponse extends SuccessResultResponse {
+export class IUserResponse extends SuccessResultResponse {
 	@ApiProperty()
 	token: string;
 
