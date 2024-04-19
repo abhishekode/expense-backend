@@ -28,6 +28,7 @@ async function bootstrap() {
 		.setDescription(
 			'This API documentation outlines endpoints and functionality for managing rad-related data. Explore endpoints for retrieving, adding, and updating rad data efficiently.'
 		)
+		.addBearerAuth()
 		.setVersion('1.0')
 		.build();
 	const document = SwaggerModule.createDocument(app, config);
