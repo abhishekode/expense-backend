@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { UsersModule } from './users/users.module';
 import { CategoryModule } from './category/category.module';
+import { ExpenseModule } from './expense/expense.module';
 
 @Module({
 	imports: [
@@ -23,6 +24,7 @@ import { CategoryModule } from './category/category.module';
 		}),
 		UsersModule,
 		CategoryModule,
+		ExpenseModule,
 	],
 	controllers: [AppController],
 	providers: [],

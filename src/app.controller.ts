@@ -5,7 +5,6 @@ export class AppController {
 	@Version('1')
 	@Get()
 	getHello(): { message: string } {
-		return { message: 'Welcome to RAD-API. This is the home page.' };
+		return { message: 'Welcome to Expense-API. This is the home page.' };
 	}
-
 }

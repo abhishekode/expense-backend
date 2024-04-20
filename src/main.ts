@@ -24,9 +24,10 @@ async function bootstrap() {
 
 	// Swagger config and it's setup
 	const config = new DocumentBuilder()
-		.setTitle('RAD API Documentation')
+		.setTitle('Expense API Documentation')
 		.setDescription(
-			'This API documentation outlines endpoints and functionality for managing rad-related data. Explore endpoints for retrieving, adding, and updating rad data efficiently.'
+			`This API documentation outlines endpoints and functionality for managing expense-related data.
+			Explore endpoints for retrieving, adding, and updating rad data efficiently.`
 		)
 		.addBearerAuth()
 		.setVersion('1.0')
