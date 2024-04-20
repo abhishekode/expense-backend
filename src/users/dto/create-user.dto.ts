@@ -13,7 +13,7 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-	@ApiProperty({ example: 'john doe' })
+	@ApiProperty({ example: 'john' })
 	name: string;
 	@ApiProperty()
 	description: string;
