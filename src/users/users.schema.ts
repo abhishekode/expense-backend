@@ -16,6 +16,7 @@ export interface User extends Document {
 	resetPasswordToken?: string;
 	description?: string;
 	gender?: Gender;
+	profileImg?: string;
 	_doc: unknown;
 }
 
@@ -36,6 +37,7 @@ const userSchemaFields = {
 	resetPasswordToken: { type: String },
 	description: { type: String, required: false },
 	gender: { type: String, required: false },
+	profileImg: { type: String, required: false },
 };
 
 const userSchemaOptions = {

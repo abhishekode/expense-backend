@@ -11,7 +11,7 @@ import {
 	UploadedFiles,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { CategoryDto } from './dto/create-category.dto';
+import { CategoryDto, categoryJoiSchema } from './dto/create-category.dto';
 import { Roles } from 'src/auth/roles.decorator';
 import { UserRole } from 'src/constants/common.interface';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -32,6 +32,7 @@ import {
 	SuccessResponse,
 } from 'src/constants/common.swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { JoiValidationPipe } from 'src/middleware/validation.pipe';
 
 @ApiTags('category')
 @ApiResponse({
@@ -56,7 +57,7 @@ export class CategoryController {
 	@ApiConsumes('multipart/form-data')
 	@UseInterceptors(FilesInterceptor('files'))
 	create(
-		@Body() categoryDto: CategoryDto,
+		@Body(new JoiValidationPipe(categoryJoiSchema)) categoryDto: CategoryDto,
 		@UploadedFiles() file: Express.Multer.File
 	) {
 		return this.categoryService.create(categoryDto, file);
@@ -83,7 +84,8 @@ export class CategoryController {
 	@UseInterceptors(FilesInterceptor('files'))
 	update(
 		@Param('id') id: string,
-		@Body() updateCategoryDto: CategoryDto,
+		@Body(new JoiValidationPipe(categoryJoiSchema))
+		updateCategoryDto: CategoryDto,
 		@UploadedFiles() file: Express.Multer.File
 	) {
 		return this.categoryService.update(id, updateCategoryDto, file);

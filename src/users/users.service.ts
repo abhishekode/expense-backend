@@ -24,6 +24,7 @@ import {
 	generateTokenPayload,
 	sendResponse,
 } from 'src/utils/commonMethods';
+import { AwsS3Service } from 'src/utils/aws-s3-upload';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +32,8 @@ export class UsersService {
 		@InjectModel('User')
 		private readonly userModel: Model<User>,
 		private jwtService: JwtService,
-		private mailService: MailerService
+		private mailService: MailerService,
+		private awsS3Service: AwsS3Service
 	) {}
 
 	private async findUserByEmail(email: string): Promise<User> {
@@ -231,9 +233,20 @@ export class UsersService {
 		return data;
 	}
 
-	async updateUserAccountDetails(email: string, userUpdateData: UpdateUserDto) {
+	async updateUserAccountDetails(
+		email: string,
+		userUpdateData: UpdateUserDto,
+		file: Express.Multer.File
+	) {
 		const user = await this.findUserByEmail(email);
+		if (user.profileImg && file.filename) {
+			await this.awsS3Service.deleteS3ObjectByUrl(user.profileImg);
+		}
+		const images = await this.awsS3Service.uploadToS3('user-profiles', file);
+
 		Object.assign(user, userUpdateData);
+		user.profileImg = images[0];
+
 		await user.save();
 
 		const data = sendResponse({

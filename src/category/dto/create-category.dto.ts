@@ -1,3 +1,4 @@
+import * as Joi from 'joi';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CategoryDto {
@@ -11,3 +12,7 @@ export class CategoryDto {
 	})
 	files: Express.Multer.File;
 }
+
+export const categoryJoiSchema = Joi.object({
+	name: Joi.string().required(),
+});
