@@ -13,12 +13,19 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-	@ApiProperty({ example: 'john doe' })
+	@ApiProperty({ example: 'john' })
 	name: string;
 	@ApiProperty()
 	description: string;
 	@ApiProperty({ example: Gender.Male, enum: Gender })
 	gender: string;
+
+	@ApiProperty({
+		type: 'string',
+		format: 'binary',
+		required: false,
+	})
+	profileImg: Express.Multer.File;
 }
 
 export class ChangePasswordDto {

@@ -6,6 +6,9 @@ import {
 	Put,
 	UseGuards,
 	Request,
+	Get,
+	UseInterceptors,
+	UploadedFiles,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -30,7 +33,12 @@ import {
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+	ApiBearerAuth,
+	ApiConsumes,
+	ApiResponse,
+	ApiTags,
+} from '@nestjs/swagger';
 import {
 	BadRequestResponse,
 	NotFoundResponse,
@@ -41,8 +49,10 @@ import {
 	OtpSuccessSendResponse,
 	OtpSuccessVerifyResponse,
 	ChangedPasswordApiResponse,
+	IUserResponse,
 } from './dto/user.swaggerResponse';
 import { UserRole } from 'src/constants/common.interface';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Users')
 @Controller('users')
@@ -120,14 +130,17 @@ export class UsersController {
 	@ApiBearerAuth()
 	@Roles(UserRole.Admin, UserRole.User)
 	@UseGuards(AuthGuard, RolesGuard)
-	@UsePipes(new JoiValidationPipe(updateUserAccountDetailsSchema))
+	@ApiConsumes('multipart/form-data')
+	@UseInterceptors(FilesInterceptor('profileImg'))
 	async updateUserAccountDetails(
-		@Body() requestData: UpdateUserDto,
-		@Request() req
+		@Body(new JoiValidationPipe(updateUserAccountDetailsSchema))
+		requestData: UpdateUserDto,
+		@Request() req,
+		@UploadedFiles() file: Express.Multer.File
 	) {
 		const email = req.user.email;
 
-		return this.usersService.updateUserAccountDetails(email, requestData);
+		return this.usersService.updateUserAccountDetails(email, requestData, file);
 	}
 
 	@Post('deactivate-account')
@@ -138,5 +151,15 @@ export class UsersController {
 	async deactivateAccount(@Request() req) {
 		const email = req.user.email;
 		return this.usersService.deactivateAccount(email);
+	}
+
+	@Get('profile')
+	@ApiBearerAuth()
+	@ApiResponse({ status: 200, type: IUserResponse })
+	@Roles(UserRole.Admin, UserRole.User)
+	@UseGuards(AuthGuard, RolesGuard)
+	async getUserProfile(@Request() req) {
+		const email = req.user.email;
+		return this.usersService.getUserProfile(email);
 	}
 }

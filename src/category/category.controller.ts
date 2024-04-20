@@ -8,9 +8,10 @@ import {
 	UseGuards,
 	Put,
 	UseInterceptors,
+	UploadedFiles,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { CategoryDto } from './dto/create-category.dto';
+import { CategoryDto, categoryJoiSchema } from './dto/create-category.dto';
 import { Roles } from 'src/auth/roles.decorator';
 import { UserRole } from 'src/constants/common.interface';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -31,6 +32,7 @@ import {
 	SuccessResponse,
 } from 'src/constants/common.swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { JoiValidationPipe } from 'src/middleware/validation.pipe';
 
 @ApiTags('category')
 @ApiResponse({
@@ -54,8 +56,11 @@ export class CategoryController {
 	@UseGuards(AuthGuard, RolesGuard)
 	@ApiConsumes('multipart/form-data')
 	@UseInterceptors(FilesInterceptor('files'))
-	create(@Body() categoryDto: CategoryDto) {
-		return this.categoryService.create(categoryDto);
+	create(
+		@Body(new JoiValidationPipe(categoryJoiSchema)) categoryDto: CategoryDto,
+		@UploadedFiles() file: Express.Multer.File
+	) {
+		return this.categoryService.create(categoryDto, file);
 	}
 
 	@Get()
@@ -75,8 +80,15 @@ export class CategoryController {
 	@ApiBearerAuth()
 	@Roles(UserRole.Admin)
 	@UseGuards(AuthGuard, RolesGuard)
-	update(@Param('id') id: string, @Body() updateCategoryDto: CategoryDto) {
-		return this.categoryService.update(id, updateCategoryDto);
+	@ApiConsumes('multipart/form-data')
+	@UseInterceptors(FilesInterceptor('files'))
+	update(
+		@Param('id') id: string,
+		@Body(new JoiValidationPipe(categoryJoiSchema))
+		updateCategoryDto: CategoryDto,
+		@UploadedFiles() file: Express.Multer.File
+	) {
+		return this.categoryService.update(id, updateCategoryDto, file);
 	}
 
 	@Delete(':id')

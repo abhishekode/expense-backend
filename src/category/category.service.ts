@@ -7,79 +7,87 @@ import type { CategoryDto } from './dto/create-category.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import type { ICategory } from './category.schema';
-import { sendResponse } from 'src/utils/commonMethods';
+import { AwsS3Service } from 'src/utils/aws-s3-upload';
 
 @Injectable()
 export class CategoryService {
 	constructor(
 		@InjectModel('Category')
-		private readonly categoryModel: Model<ICategory>
+		private readonly categoryModel: Model<ICategory>,
+		private readonly awsS3Service: AwsS3Service
 	) {}
 
-	async create(createCategoryDto: CategoryDto) {
+	private sendResponse(data: any, message: string) {
+		return {
+			status: true,
+			message,
+			result: data,
+		};
+	}
+
+	private async getCategoryById(id: string) {
+		const category = await this.categoryModel.findById(id);
+		if (!category) {
+			throw new NotFoundException(`Cannot find category ${id}`);
+		}
+		return category;
+	}
+
+	async create(createCategoryDto: CategoryDto, file: Express.Multer.File) {
 		const { name } = createCategoryDto;
 
-		const category = await this.categoryModel.findOne({ name });
+		const categoryExists = await this.categoryModel.findOne({ name });
 
-		if (category) {
+		if (categoryExists) {
 			throw new BadRequestException('Category already exists');
 		}
-		const newCategory = new this.categoryModel({ ...createCategoryDto });
-		const categoryDetail = await newCategory.save();
-		const data = sendResponse({
-			status: true,
-			result: categoryDetail,
-			message: 'new category created successfully',
+		const image = await this.awsS3Service.uploadToS3('category', file);
+		const newCategory = new this.categoryModel({
+			...createCategoryDto,
+			categoryImage: image[0],
 		});
-		return data;
+		const categoryDetail = await newCategory.save();
+		return this.sendResponse(
+			categoryDetail,
+			'New category created successfully'
+		);
 	}
 
 	async findAll() {
-		const category = await this.categoryModel.find();
-		const data = sendResponse({
-			status: true,
-			result: category,
-			message: 'category fetched successfully',
-		});
-		return data;
+		const categories = await this.categoryModel.find();
+		return this.sendResponse(categories, 'Categories fetched successfully');
 	}
 
 	async findOne(id: string) {
-		const category = await this.categoryModel.findById(id);
-		if (!category) {
-			throw new NotFoundException(`Cannot find category ${id}`);
-		}
-		const data = sendResponse({
-			status: true,
-			result: category,
-			message: 'category fetched successfully',
-		});
-		return data;
+		const category = await this.getCategoryById(id);
+		return this.sendResponse(category, 'Category fetched successfully');
 	}
 
-	async update(id: string, updateCategoryDto: CategoryDto) {
-		const category = await this.categoryModel.findById(id);
-		if (!category) {
-			throw new NotFoundException(`Cannot find category ${id}`);
+	async update(
+		id: string,
+		updateCategoryDto: CategoryDto,
+		file?: Express.Multer.File
+	) {
+		const { name } = updateCategoryDto;
+		const category = await this.getCategoryById(id);
+
+		if (file?.filename && category.categoryImage.length) {
+			await this.awsS3Service.deleteS3ObjectByUrl(category.categoryImage);
 		}
-		Object.assign(category, updateCategoryDto);
+
+		if (file?.filename) {
+			const image = await this.awsS3Service.uploadToS3('category', file);
+			category.categoryImage = image[0];
+		}
+		category.name = name;
 		await category.save();
-		const data = sendResponse({
-			status: true,
-			message: 'category updated successfully',
-		});
-		return data;
+
+		return this.sendResponse(null, 'Category updated successfully');
 	}
 
 	async remove(id: string) {
-		const category = await this.categoryModel.findByIdAndDelete(id);
-		if (!category) {
-			throw new NotFoundException(`Cannot find category ${id}`);
-		}
-		const data = sendResponse({
-			status: true,
-			message: 'category delete successfully',
-		});
-		return data;
+		await this.getCategoryById(id);
+		await this.categoryModel.findByIdAndDelete(id);
+		return this.sendResponse(null, 'Category deleted successfully');
 	}
 }

@@ -24,6 +24,7 @@ import {
 	generateTokenPayload,
 	sendResponse,
 } from 'src/utils/commonMethods';
+import { AwsS3Service } from 'src/utils/aws-s3-upload';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +32,8 @@ export class UsersService {
 		@InjectModel('User')
 		private readonly userModel: Model<User>,
 		private jwtService: JwtService,
-		private mailService: MailerService
+		private mailService: MailerService,
+		private awsS3Service: AwsS3Service
 	) {}
 
 	private async findUserByEmail(email: string): Promise<User> {
@@ -231,14 +233,45 @@ export class UsersService {
 		return data;
 	}
 
-	async updateUserAccountDetails(email: string, userUpdateData: UpdateUserDto) {
+	async updateUserAccountDetails(
+		email: string,
+		userUpdateData: UpdateUserDto,
+		file: Express.Multer.File
+	) {
 		const user = await this.findUserByEmail(email);
+		if (user.profileImg && file.filename) {
+			await this.awsS3Service.deleteS3ObjectByUrl(user.profileImg);
+		}
+		const images = await this.awsS3Service.uploadToS3('user-profiles', file);
+
 		Object.assign(user, userUpdateData);
+		user.profileImg = images[0];
+
 		await user.save();
 
 		const data = sendResponse({
 			status: true,
 			message: 'Your profile details is updated successfully',
+		});
+		return data;
+	}
+
+	async getUserProfile(email: string): Promise<User> {
+		const user = await this.findUserByEmail(email);
+
+		if (!user.isEmailVerified)
+			throw new BadRequestException(
+				'Your email is not verified. Please verify it first'
+			);
+
+		const newUserDoc = user._doc as unknown as User;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { password: pass, ...rest } = newUserDoc;
+
+		const data = sendResponse({
+			status: true,
+			result: { ...rest },
+			message: 'user logged-in successfully',
 		});
 		return data;
 	}

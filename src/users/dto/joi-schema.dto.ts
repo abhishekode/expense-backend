@@ -3,14 +3,14 @@ import { Gender } from 'src/constants/common.interface';
 import { phoneWithCountryCodeSchema } from 'src/constants/common.joi-validation';
 
 export const registrationSchema = Joi.object({
-	name: Joi.string().alphanum().min(3).max(30).required(),
+	name: Joi.string().min(3).max(30).required(),
 	email: Joi.string().email().required(),
 	password: Joi.string().min(6).required(),
 	phone: phoneWithCountryCodeSchema,
 });
 
 export const updateUserAccountDetailsSchema = Joi.object({
-	name: Joi.string().alphanum().min(3).max(30).required(),
+	name: Joi.string().min(3).max(30).required(),
 	description: Joi.string().optional(),
 	gender: Joi.string()
 		.optional()
