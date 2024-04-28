@@ -58,13 +58,18 @@ export class ExpenseService {
 				.find(filter)
 				.limit(limit)
 				.skip(skip)
-				.populate('category', 'name')
+				.populate('category', 'name categoryImage')
 				.sort({ createdAt: -1 })
 				.exec(),
 			this.expenseModel.countDocuments(),
 		]);
+		// Calculate total price
+		const totalPrice = expenses.reduce(
+			(acc, expense) => acc + expense.amount,
+			0
+		);
 
-		const finalExpenseData = { expenses, total };
+		const finalExpenseData = { expenses, total, totalPrice };
 
 		const data = sendResponse({
 			status: true,

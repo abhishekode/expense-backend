@@ -70,7 +70,7 @@ export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
 	@Post('register')
-	@ApiResponse({ status: 200, type: UserLoginSuccessResponse })
+	@ApiResponse({ status: 200, type: OtpSuccessSendResponse })
 	@UsePipes(new JoiValidationPipe(registrationSchema))
 	create(@Body() requestData: CreateUserDto) {
 		return this.usersService.createNewUser(requestData);
@@ -81,6 +81,21 @@ export class UsersController {
 	@UsePipes(new JoiValidationPipe(loginSchema))
 	login(@Body() requestData: LoginUserDto) {
 		return this.usersService.login(requestData);
+	}
+
+	@Post('verify-otp')
+	@ApiResponse({ status: 200, type: OtpSuccessVerifyResponse })
+	@UsePipes(new JoiValidationPipe(verifyOtpSchema))
+	async verifyEmailOtp(@Body() args: verifyEmailOtpDto) {
+		const { email, otp } = args;
+		return this.usersService.verifyEmailOtp(email, otp);
+	}
+
+	@Post('resend-otp')
+	@ApiResponse({ status: 200, type: OtpSuccessSendResponse })
+	@UsePipes(new JoiValidationPipe(otpValidatorSchema))
+	async resendOtp(@Body() args: ResendOtpDto) {
+		return this.usersService.resendOtp(args.email, false);
 	}
 
 	@Post('forgot-password')
@@ -98,31 +113,12 @@ export class UsersController {
 		return this.usersService.resendOtp(args.email, true);
 	}
 
-	@Post('verify-otp')
-	@ApiResponse({ status: 200, type: OtpSuccessVerifyResponse })
-	@UsePipes(new JoiValidationPipe(verifyOtpSchema))
-	async verifyEmailOtp(@Body() args: verifyEmailOtpDto) {
-		const { email, otp } = args;
-		return this.usersService.verifyEmailOtp(email, otp);
-	}
-
 	@Put('change-forgot-password')
 	@ApiResponse({ status: 200, type: ChangedPasswordApiResponse })
 	@UsePipes(new JoiValidationPipe(changeForgotPasswordSchema))
 	async changeForgotPassword(@Body() args: ChangeForgotPasswordDto) {
 		const { newPassword, email } = args;
 		return this.usersService.changePassword(email, { newPassword }, true);
-	}
-
-	@Put('change-password')
-	@ApiResponse({ status: 200, type: ChangedPasswordApiResponse })
-	@ApiBearerAuth()
-	@Roles(UserRole.Admin, UserRole.User)
-	@UseGuards(AuthGuard, RolesGuard)
-	@UsePipes(new JoiValidationPipe(changePasswordSchema))
-	async changeCurrentPassword(@Body() args: ChangePasswordDto, @Request() req) {
-		const email = req.user.email;
-		return this.usersService.changePassword(email, args, false);
 	}
 
 	@Put('account')
@@ -161,5 +157,16 @@ export class UsersController {
 	async getUserProfile(@Request() req) {
 		const email = req.user.email;
 		return this.usersService.getUserProfile(email);
+	}
+
+	@Put('change-password')
+	@ApiResponse({ status: 200, type: ChangedPasswordApiResponse })
+	@ApiBearerAuth()
+	@Roles(UserRole.Admin, UserRole.User)
+	@UseGuards(AuthGuard, RolesGuard)
+	@UsePipes(new JoiValidationPipe(changePasswordSchema))
+	async changeCurrentPassword(@Body() args: ChangePasswordDto, @Request() req) {
+		const email = req.user.email;
+		return this.usersService.changePassword(email, args, false);
 	}
 }

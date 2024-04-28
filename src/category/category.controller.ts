@@ -57,7 +57,7 @@ export class CategoryController {
 	@ApiConsumes('multipart/form-data')
 	@UseInterceptors(FilesInterceptor('files'))
 	create(
-		@Body(new JoiValidationPipe(categoryJoiSchema)) categoryDto: CategoryDto,
+		@Body() categoryDto: CategoryDto,
 		@UploadedFiles() file: Express.Multer.File
 	) {
 		return this.categoryService.create(categoryDto, file);

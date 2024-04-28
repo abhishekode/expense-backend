@@ -3,12 +3,12 @@ import {
 	Get,
 	Post,
 	Body,
-	Patch,
 	Param,
 	Delete,
 	UseGuards,
 	Request,
 	Query,
+	Put,
 } from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import {
@@ -77,15 +77,15 @@ export class ExpenseController {
 		return this.expenseService.findOne(id, userId);
 	}
 
-	@Patch(':id')
+	@Put(':id')
 	@ApiResponse({ status: 200, type: SuccessResponse })
 	@ApiBearerAuth()
 	@Roles(UserRole.User)
 	@UseGuards(AuthGuard, RolesGuard)
 	update(
 		@Param('id') id: string,
-		@Request() req,
-		@Body() updateExpenseDto: UpdateExpenseDto
+		@Body() updateExpenseDto: UpdateExpenseDto,
+		@Request() req
 	) {
 		const userId = req.user.id;
 		return this.expenseService.update(id, updateExpenseDto, userId);

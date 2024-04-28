@@ -36,6 +36,13 @@ export class CategoryService {
 	async create(createCategoryDto: CategoryDto, file: Express.Multer.File) {
 		const { name } = createCategoryDto;
 
+		if (!name) {
+			throw new NotFoundException(`Cannot find category name`);
+		}
+		if (!file) {
+			throw new NotFoundException(`Cannot find category image`);
+		}
+
 		const categoryExists = await this.categoryModel.findOne({ name });
 
 		if (categoryExists) {

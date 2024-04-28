@@ -40,7 +40,7 @@ export class UsersService {
 		const user = await this.userModel.findOne({ email }).exec();
 
 		if (!user) {
-			throw new NotFoundException('User not found.');
+			throw new NotFoundException('user not found with email!');
 		}
 
 		return user;
@@ -101,23 +101,21 @@ export class UsersService {
 
 		// We're good now we need to register new user  in our User collection
 		const hashedPassword = await generateHashPassword(password);
+		const { otp, otpExpireTime } = generateOtpAndExpiryTime();
 
-		const newUser = await new this.userModel({
+		await new this.userModel({
 			...createUser,
 			password: hashedPassword,
+			otp,
+			otpExpireTime,
 		}).save();
-		const newUserDoc = newUser._doc as unknown as User;
 
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { password: pass, ...rest } = newUserDoc;
-
-		const payload = generateTokenPayload(newUser);
-		const token = await this.jwtService.signAsync(payload);
+		this.sendOtpEmail(email, otp);
 
 		const data = sendResponse({
 			status: true,
-			result: { token, ...rest },
-			message: 'user logged-in successfully',
+			result: { otpSend: true },
+			message: 'New user created successfully, Please verify your email!',
 		});
 		return data;
 	}
@@ -146,8 +144,9 @@ export class UsersService {
 	}
 
 	async verifyEmailOtp(email: string, otp: number) {
+		const emailOtp = parseInt(otp.toString());
 		const user = await this.findUserByEmail(email);
-		if (user.otp !== otp || user.otpExpireTime < new Date()) {
+		if (user.otp !== emailOtp || user.otpExpireTime < new Date()) {
 			throw new BadRequestException('OTP is invalid or expired.');
 		}
 
@@ -187,7 +186,7 @@ export class UsersService {
 
 		const data = sendResponse({
 			status: true,
-			result: { token, user: { ...rest } },
+			result: { token, ...rest },
 			message: 'user logged-in successfully',
 		});
 		return data;
