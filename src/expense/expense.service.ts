@@ -58,7 +58,7 @@ export class ExpenseService {
 				.find(filter)
 				.limit(limit)
 				.skip(skip)
-				.populate('category', 'name categoryImage')
+				.populate('category', 'name')
 				.sort({ createdAt: -1 })
 				.exec(),
 			this.expenseModel.countDocuments(),
@@ -133,6 +133,9 @@ export class ExpenseService {
 
 		if (query.maxAmount !== undefined) {
 			filter.amount = { ...filter.amount, $lte: query.maxAmount };
+		}
+		if (query.paidIn) {
+			filter.paidIn = query.paidIn;
 		}
 
 		return filter;

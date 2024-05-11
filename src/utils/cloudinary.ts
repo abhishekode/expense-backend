@@ -28,7 +28,11 @@ export class CloudinaryService {
 
 		const result = (await new Promise((resolve, reject) => {
 			uploadStream.on('error', (error) => reject(error));
-			uploadStream.on('finish', () => resolve(uploadStream.response()));
+			uploadStream.on(
+				'finish',
+				(result: UploadApiResponse | PromiseLike<UploadApiResponse>) =>
+					resolve(result)
+			);
 
 			const readableStream = Readable.from(filename.buffer);
 			readableStream.pipe(uploadStream);

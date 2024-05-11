@@ -29,4 +29,4 @@ import { ExpenseModule } from './expense/expense.module';
 	controllers: [AppController],
 	providers: [],
 })
-export class AppModule { }
+export class AppModule {}

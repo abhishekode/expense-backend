@@ -24,7 +24,7 @@ import {
 	generateTokenPayload,
 	sendResponse,
 } from 'src/utils/commonMethods';
-import { AwsS3Service } from 'src/utils/aws-s3-upload';
+import { CloudinaryService } from 'src/utils/cloudinary';
 
 @Injectable()
 export class UsersService {
@@ -33,7 +33,7 @@ export class UsersService {
 		private readonly userModel: Model<User>,
 		private jwtService: JwtService,
 		private mailService: MailerService,
-		private awsS3Service: AwsS3Service
+		private cloudinaryService: CloudinaryService
 	) {}
 
 	private async findUserByEmail(email: string): Promise<User> {
@@ -239,12 +239,12 @@ export class UsersService {
 	) {
 		const user = await this.findUserByEmail(email);
 		if (user.profileImg && file.filename) {
-			await this.awsS3Service.deleteS3ObjectByUrl(user.profileImg);
+			await this.cloudinaryService.deleteImageByUrl(user.profileImg);
 		}
-		const images = await this.awsS3Service.uploadToS3('user-profiles', file);
+		const images = await this.cloudinaryService.uploadImage(file);
 
 		Object.assign(user, userUpdateData);
-		user.profileImg = images[0];
+		user.profileImg = images.url;
 
 		await user.save();
 

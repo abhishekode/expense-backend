@@ -6,7 +6,7 @@ import { UserSchema } from './users.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/constants';
 import { ConfigModule } from '@nestjs/config';
-import { AwsS3Service } from 'src/utils/aws-s3-upload';
+import { CloudinaryService } from 'src/utils/cloudinary';
 
 @Module({
 	imports: [
@@ -19,6 +19,6 @@ import { AwsS3Service } from 'src/utils/aws-s3-upload';
 		}),
 	],
 	controllers: [UsersController],
-	providers: [UsersService, AwsS3Service],
+	providers: [UsersService, CloudinaryService],
 })
 export class UsersModule {}
